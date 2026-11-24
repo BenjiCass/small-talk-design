@@ -89,8 +89,8 @@ body{display:flex;align-items:center;justify-content:center}
 .pcta{padding:4px 20px 24px;flex:none}
 
 /* chat */
-.stage{position:relative;flex:1;min-height:0}
-.stage .photo{position:absolute;inset:0 0 44px 0;border-radius:0 0 32px 32px}
+.stage{position:relative;flex:1;min-height:0;overflow:hidden;overflow:clip}
+.stage .photo{position:absolute;inset:0 0 44px 0;border-radius:0 0 32px 32px;overflow:hidden;overflow:clip}
 .stage .shade{height:62%;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0.6) 30%,rgba(0,0,0,0.6) 100%)}
 .chead{position:absolute;top:16px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center}
 .cap{position:absolute;left:20px;right:20px;bottom:62px;display:flex;flex-direction:column;gap:12px;max-height:calc(100% - 150px);overflow-y:auto;scrollbar-width:none;color:#FFFFFF}
@@ -106,6 +106,7 @@ body{display:flex;align-items:center;justify-content:center}
 .note{font-size:14px;line-height:1.4}
 .hint{align-self:flex-start;min-height:44px;padding:8px 16px;border-radius:22px;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .hint b{font-weight:700}
+.hint.off{visibility:hidden}
 .panel{padding:12px 16px 14px;border-radius:20px;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);display:flex;flex-direction:column;gap:4px;flex:none}
 .panel .pl{font-size:13px;font-weight:700}
 .panel .pt{font-size:18px;line-height:1.4;min-height:25px;overflow-wrap:anywhere}
@@ -182,11 +183,12 @@ body{display:flex;align-items:center;justify-content:center}
 .opt{width:100%;min-height:48px;padding:11px 16px;border-radius:18px;border:0;background:rgba(255,255,255,0.94);color:var(--ink);font-size:16px;line-height:1.35;text-align:left}
 .optlab{font-size:13px;font-weight:600}
 .endcard{background:var(--fill);border:0;box-shadow:none}
+.demobar span{display:block;font-weight:400;opacity:.85}
 </style>
 </head>
 <body>
 <div id="frame">
-<div class="demobar" role="note"><b>Demo mode.</b> Claire’s replies are scripted. In the live app, Claude writes every reply.</div>
+<div class="demobar" role="note"><b>Demo mode.</b> Scripted replies, still photo, no avatar.<span>Tested in a desktop browser. The real version is a phone app.</span></div>
 <main id="app"></main>
 <div id="sheet"></div>
 <div id="toast" class="toast" role="status" hidden></div>
@@ -229,32 +231,37 @@ var TURNS = [
   {claire:'Morning, Lucía! Heading down for breakfast too? I badly need a coffee.', hint:'Answer, then ask: Did you…?', shared:false,
    opts:[
     {k:'a', text:'Yes, me too. Did you sleep well?', fu:'Did you sleep well?', react:'Not really, to be honest.', phrase:{text:'Did you sleep well?', why:'An easy first question for any morning.'}},
-    {k:'b', text:'Yes. I’m going to breakfast.', react:'Good plan. I didn’t sleep much, actually.'},
-    {k:'c', text:'Yes, yes. Is very early for me.', react:'It is early, isn’t it? I didn’t sleep much either.', err:{re:/\bis very early\b/i, fix:'Yes, yes. It’s very early for me.', why:'English needs a subject here: it’s, not is.', label:'missing subject (“Is very early”)'}}
+    {k:'b', text:'Yes. I’m going to breakfast.', react:'Good plan. I hardly slept.'},
+    {k:'c', text:'Yes, yes. Is very early for me.', react:'It is early, isn’t it? I hardly slept.', err:{re:/\bis very early\b/i, fix:'Yes, me too. It’s very early for me.', why:'English needs “It’s” here, and one “Yes” sounds friendlier than “Yes, yes”, which can sound impatient.', label:'missing subject (“Is very early”) and “Yes, yes” from Spanish “sí, sí”'}}
    ]},
   {claire:'The man next door watched TV until two.', hint:'Ask: Did you call…?', shared:true, topic:'the noisy neighbour', ask:'Did you call reception?',
    opts:[
-    {k:'a', text:'Oh no! Did you call reception?', fu:'Did you call reception?', react:'I thought about it, but I was too tired to pick up the phone. Lesson learned.', phrase:{text:'Oh no! Did you call reception?', why:'Show sympathy first, then ask about it.'}},
-    {k:'b', text:'Oh. My room was quiet.', react:'Lucky you! I’m asking for a room change tonight.', natural:{fix:'Oh no. Mine was quiet, luckily.', why:'Nothing wrong here. This version shows sympathy before your news.'}},
-    {k:'c', text:'That is terrible. I hate the noise.', react:'Me too. I’m asking for a room change tonight.'}
+    {k:'a', text:'Oh no! Did you call reception?', fu:'Did you call reception?', react:'No, I was too tired to pick up the phone!', phrase:{text:'Oh no! Did you call reception?', why:'Show sympathy first, then ask about it.'}},
+    {k:'b', text:'Oh. My room was quiet.', react:'Lucky you. I’m changing rooms tonight.', natural:{fix:'Oh no. Mine was quiet, luckily.', why:'Nothing wrong here. This version shows sympathy before your news.'}},
+    {k:'c', text:'That is terrible. I hate the noise.', react:'Me too. I’m changing rooms tonight.'}
    ]},
-  {claire:'Ah, ground floor. So, are you presenting today?', hint:'Answer, then ask: And you?', shared:false,
+  {claire:'Ah, ground floor. Are you presenting today?', hint:'Answer, then ask: And you?', shared:false,
    opts:[
-    {k:'a', text:'Yes, at three o’clock, about digital skills. And you?', raw:'yes at three o’clock about digital skill and you', fu:'And you?', react:'Not this time, thank goodness. I’m just here to listen and drink a lot of coffee.', phrase:{text:'Yes, at three o’clock, about digital skills. And you?', why:'Answer, add one detail, then hand the question back.'}},
-    {k:'b', text:'Yes, in the afternoon.', raw:'yes in the afternoon', react:'Oh, good luck. I’m not presenting this time, thank goodness.'},
-    {k:'c', text:'Yes, and I am very nervous for the presentation.', raw:'yes and I am very nervous for the presentation', react:'Oh, you’ll be fine. Honestly, everyone’s nervous before a talk.', err:{re:/nervous for/i, fix:'Yes, and I’m very nervous about the presentation.', why:'We are nervous about something, not for it.', label:'preposition (“nervous for”)'}}
+    {k:'a', text:'Yes, at three o’clock, about digital skills. And you?', raw:'yes at three o’clock about digital skill and you', fu:'And you?', react:'Not this time, thank goodness.', phrase:{text:'Yes, at three o’clock, about digital skills. And you?', why:'Answer, add one detail, then hand the question back.'}},
+    {k:'b', text:'Yes, in the afternoon.', raw:'yes in the afternoon', react:'Good luck! I’m not presenting this time.'},
+    {k:'c', text:'Yes, and I am very nervous for the presentation.', raw:'yes and I am very nervous for the presentation', react:'You’ll be fine. Everyone gets nervous.', err:{re:/nervous for/i, fix:'Yes, and I’m very nervous about the presentation.', why:'We are nervous about something, not for it.', label:'preposition (“nervous for”)'}}
    ]},
-  {claire:'Anyway, I’m flying home tomorrow night. My son Josh has a football final on Saturday.', hint:'Ask: What position does…?', shared:true, topic:'Josh’s football final', ask:'What position does he play?',
+  {claire:'My son Josh has a football final on Saturday.', hint:'Ask: What position does…?', shared:true, topic:'Josh’s football final', ask:'What position does he play?',
    opts:[
-    {k:'a', text:'A final! How exciting. What position does he play?', fu:'What position does he play?', react:'Defence, mostly. He’s much better at it than his mum is at queueing for breakfast.', phrase:{text:'A final! How exciting.', why:'React with energy before you ask your question.'}},
+    {k:'a', text:'A final! How exciting. What position does he play?', fu:'What position does he play?', react:'Defence. He takes it very seriously.', phrase:{text:'A final! How exciting.', why:'React with energy before you ask your question.'}},
     {k:'b', text:'That’s nice.', react:'It should be. Fingers crossed.', natural:{fix:'That’s exciting! Good luck to him.', why:'Nothing wrong here. A little more energy keeps the chat going.'}},
     {k:'c', text:'My son also play football.', react:'Oh really? Then you know all about cold Sunday mornings.', err:{re:/\bson also play\b/i, fix:'My son also plays football.', why:'He plays: add -s after he, she or it.', label:'third person -s (“My son also play”)'}}
+   ]},
+  {claire:'Anyway, I really need that coffee now.', hint:'Close: I’d better… See you…', shared:false, close:true,
+   opts:[
+    {k:'a', text:'Me too. Enjoy your breakfast, see you in the first session!', closeOk:true, react:'You too, Lucía. See you in there!', phrase:{text:'Enjoy your breakfast, see you in the first session!', why:'A warm way to end a chat and plan to meet again.'}},
+    {k:'b', text:'OK. Bye.', react:'Oh, right. Bye, Lucía!', natural:{fix:'OK, enjoy your breakfast. See you later!', why:'Nothing wrong here, but “OK. Bye.” sounds abrupt. Add a wish and a “see you”.'}},
+    {k:'c', text:'Well, I go to eat now. Bye bye!', react:'Enjoy it! See you later, Lucía.', err:{re:/\bI go to eat\b/i, fix:'Well, I’m going to get some breakfast. See you later!', why:'Use “I’m going to” for something you are about to do.', label:'present simple for a plan (“I go to eat”)'}}
    ]}
 ];
-var EXIT = 'Right, I’ll grab a table before the eggs run out. See you in there, Lucía!';
 var CLAIRE_PHRASES = [
-  {text:'I badly need a coffee.', source:'claire', why:'Say this when you really want something.'},
-  {text:'Right, I’ll grab a table.', source:'claire', why:'A friendly way to leave a conversation.'}
+  {text:'I badly need a coffee.', source:'claire', why:'A friendly way to say you’re tired in the morning.'},
+  {text:'Anyway, I really need that coffee now.', source:'claire', why:'“Anyway” signals that a chat is coming to an end.'}
 ];
 
 /* ---------- state ---------- */
@@ -283,10 +290,11 @@ SCREENS.intro = function(){
   '<div class="fr-body scroll">' +
   '<div class="persona"><b>You’re playing Lucía</b><span>Head of People at a Spanish publishing group. Strong B2 English, travels to conferences, freezes when the talk turns social. A fictional profile based on a real learner.</span></div>' +
   '<div class="fr-points">' +
-  '<div class="stack2"><b>One short chat, no scores</b><span>Three minutes in a hotel lift with Claire.</span></div>' +
+  '<div class="stack2"><b>One short chat, no scores</b><span>Three minutes in a hotel lift with Claire. No clock on screen, by design: the learner gets nervous under pressure.</span></div>' +
   '<div class="stack2"><b>Choose what Lucía says</b><span>In the live app she speaks or types freely. Here you pick from three replies.</span></div>' +
   '<div class="stack2"><b>Tips after, then the teacher view</b><span>See the learner’s debrief, then what Ben reads before class.</span></div>' +
   '</div>' +
+  '<div class="vbanner"><b>What this demo is.</b> A one-pass build on Fable 5.2, now tested. Claire’s replies are scripted, and the scene is a still photo, not an avatar. The real version is a phone app; this demo runs in a browser. If you turn on Read Claire aloud in Settings, you hear your browser’s default voice. It sounds generic and changes from device to device. A real version would use one fixed, natural UK voice.</div>' +
   '<div style="margin-top:auto"><button type="button" class="btn btn-primary" data-act="intro-start">Start the demo</button></div>' +
   '</div></section>';
 };
@@ -355,8 +363,8 @@ function settingsHTML(){
   var sw = function(act, on, title, sub){ return '<div class="row"><div class="rt"><b>' + title + '</b><span>' + sub + '</span></div><button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="' + title + '" data-act="' + act + '"><span><i></i></span></button></div>'; };
   return '<div class="grab"></div><div class="shead"><h2>Settings</h2><button type="button" class="iconbtn" data-act="sheet-close" aria-label="Close settings">' + svg(P.x, 20) + '</button></div>' +
   '<div class="field"><div class="label" id="lvlab">Your level</div><div class="pills" role="group" aria-labelledby="lvlab"><button type="button" class="pill" disabled aria-pressed="false">B1</button><button type="button" class="pill" aria-pressed="true">B2</button><button type="button" class="pill" disabled aria-pressed="false">C1</button></div><div class="xs">In the live app, the level changes how Claire speaks, not the task. The demo is scripted at B2.</div></div>' +
-  sw('set-hints', ui.hints, 'Live hints', 'A question starter if you wait 8 seconds.') +
-  ('speechSynthesis' in window ? sw('set-voice', ui.voiceOn, 'Read Claire aloud', 'Uses your browser’s voice. The live app uses Claude voices.') : '') +
+  sw('set-hints', ui.hints, 'Live hints', 'A question starter if you wait. The live app waits 8 seconds of silence; the demo allows 15 seconds to read the replies.') +
+  ('speechSynthesis' in window ? sw('set-voice', ui.voiceOn, 'Read Claire aloud', 'Uses your browser’s default voice, so it sounds generic and differs by device. A real version needs one fixed UK voice.') : '') +
   '<button type="button" class="btn btn-primary" data-act="sheet-close">Done</button>';
 }
 
@@ -391,7 +399,7 @@ function startChat(){
   stopSpeak();
   chat = {i:0, picks:[], turns:[], state:'thinking', hintVisible:false, hintTimer:null, draft:null, elapsed:0, lastTick:performance.now(), closed:false, tick:null, firstCheck:true};
   ui.screen = 'chat'; closeSheet(true); render();
-  chat.tick = setInterval(function(){ var c = chat; if (!c || c.closed) return; var now = performance.now(); if (!ui.sheet && !document.hidden) c.elapsed += Math.min(1000, now - c.lastTick); c.lastTick = now; }, 250);
+  chat.tick = setInterval(function(){ var c = chat; if (!c || c.closed) return; var now = performance.now(); if (!ui.sheet && !document.hidden && c.state !== 'thinking') c.elapsed += Math.min(1000, now - c.lastTick); c.lastTick = now; }, 250);
   wait(700).then(function(){ if (chat && !chat.closed) claireSays(TURNS[0].claire, false); });
 }
 function claireSays(text, ending){
@@ -401,14 +409,16 @@ function claireSays(text, ending){
   setState('speaking');
   speak(text).then(function(){
     if (c !== chat || c.closed || c.state !== 'speaking') return;
-    if (ending) { wait(600).then(function(){ if (c === chat && !c.closed) finishChat('claire'); }); return; }
+    if (ending) { wait(600).then(function(){ if (c === chat && !c.closed) finishChat('learner'); }); return; }
     setState('yourturn'); armHint();
   });
 }
+/* Live app: 8 s of silence. Demo: 15 s, counted from when the replies appear, to allow time to read them. */
+var HINT_MS = 15000;
 function armHint(){
   var c = chat; clearHint();
   if (!ui.hints) return;
-  c.hintTimer = setTimeout(function(){ if (c === chat && c.state === 'yourturn') { c.hintVisible = true; paintChat(); say('Hint. ' + TURNS[c.i].hint); } }, 8000);
+  c.hintTimer = setTimeout(function(){ if (c === chat && c.state === 'yourturn') { c.hintVisible = true; paintChat(); say('Hint. ' + TURNS[c.i].hint); } }, HINT_MS);
 }
 function clearHint(){ if (chat && chat.hintTimer) { clearTimeout(chat.hintTimer); chat.hintTimer = null; } }
 function setState(s){ if (!chat) return; chat.state = s; paintChat(); }
@@ -432,7 +442,7 @@ function sendReply(){
   wait(900).then(function(){
     if (c !== chat || c.closed) return;
     if (next < TURNS.length) { c.i = next; claireSays(react + ' ' + TURNS[next].claire, false); }
-    else claireSays(react + ' ' + EXIT, true);
+    else claireSays(react, true);
   });
 }
 function teardown(){ var c = chat; if (!c) return; c.closed = true; clearHint(); clearInterval(c.tick); stopSpeak(); }
@@ -476,9 +486,9 @@ function paintChat(){
   } else if (st === 'yourturn') {
     var T = TURNS[c.i];
     h = pill('Your turn', true) + line(true) +
+      (ui.hints ? '<div class="hint' + (c.hintVisible ? '' : ' off') + '"' + (c.hintVisible ? '' : ' aria-hidden="true"') + '><b>Hint</b><span>' + esc(T.hint) + '</span></div>' : '') +
       '<div class="optlab">Choose what Lucía says. In the live app, she speaks or types.</div>' +
-      '<div class="opts" role="group" aria-label="Replies">' + T.opts.map(function(o){ return '<button type="button" class="opt" data-act="choose" data-k="' + o.k + '">' + esc(o.text) + '</button>'; }).join('') + '</div>' +
-      (c.hintVisible ? '<div class="hint"><b>Hint</b><span>' + esc(T.hint) + '</span></div>' : '');
+      '<div class="opts" role="group" aria-label="Replies">' + T.opts.map(function(o){ return '<button type="button" class="opt" data-act="choose" data-k="' + o.k + '">' + esc(o.text) + '</button>'; }).join('') + '</div>';
     main = ''; lc = 'Choose a reply';
   } else if (st === 'check') {
     h = pill('Check your reply', true) + line(true) +
@@ -497,6 +507,7 @@ function paintChat(){
     ta.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendReply(); } });
   }
   cap.scrollTop = cap.scrollHeight;
+  ['.stage', '.stage .photo', '#app', '#frame'].forEach(function(sel){ var el = $(sel); if (el) { el.scrollTop = 0; el.scrollLeft = 0; } });
 }
 
 /* ---------- debrief logic (stands in for the Claude debrief call) ---------- */
@@ -504,7 +515,7 @@ function buildDebrief(s){
   var picks = s.picks, d = {phrases:[], correction:null, followUps:[], nextTime:''};
   picks.forEach(function(p){ if (p.opt.k === 'a' && p.opt.fu && letters(p.sent).indexOf(letters(p.opt.fu)) > -1) d.followUps.push(p.opt.fu); });
   var mine = null;
-  [2, 3, 1, 0].some(function(ti){ var p = picks.filter(function(x){ return x.turn === ti && x.opt.phrase; })[0]; if (p && letters(p.sent).indexOf(letters(p.opt.phrase.text).slice(0, 14)) > -1) { mine = p.opt.phrase; return true; } return false; });
+  [2, 3, 4, 1, 0].some(function(ti){ var p = picks.filter(function(x){ return x.turn === ti && x.opt.phrase; })[0]; if (p && letters(p.sent).indexOf(letters(p.opt.phrase.text)) > -1) { mine = p.opt.phrase; return true; } return false; });
   d.phrases = mine ? [{text:mine.text, source:'you', why:mine.why}, CLAIRE_PHRASES[0]] : CLAIRE_PHRASES.slice();
   var errPick = picks.filter(function(p){ return p.opt.err && p.opt.err.re.test(p.sent); })[0];
   if (errPick) d.correction = {youSaid:errPick.sent, trySaying:errPick.opt.err.fix, why:errPick.opt.err.why};
@@ -529,7 +540,9 @@ function buildNote(s){
   var first = a + ' follow-up question' + (a === 1 ? '' : 's') + ' in ' + n + ' turn' + (n === 1 ? '' : 's') + '.';
   if (closedNews) first += ' When Claire shared news, Lucía answered without asking back, so Claire carried the chat.';
   if (errs.length) first += ' Accuracy slipped under pressure: ' + errs.join('; ') + '.';
-  if (hints) first += ' Waited for the hint on ' + hints + ' turn' + (hints === 1 ? '' : 's') + '.';
+  if (hints) first += ' The hint appeared on ' + hints + ' turn' + (hints === 1 ? '' : 's') + '.';
+  var closePick = picks.filter(function(p){ return TURNS[p.turn].close; })[0];
+  if (closePick) first += closePick.opt.closeOk ? ' Closed the chat herself, warmly.' : ' Closed the chat herself, but the close could be warmer.';
   if (edits) first += ' Fixed the speech transcript before sending on ' + edits + ' turn' + (edits === 1 ? '' : 's') + '.';
   var second = a <= 1 ? 'In class: drill “react, then ask” with news cards (Oh no! Did you…? / How exciting! What…?).' : (errs.length ? 'In class: a two-minute review of ' + errs[0].split(' (')[0] + ', then repeat this scene.' : 'In class: move on to second follow-up questions on the same topic.');
   return first + ' ' + second;
@@ -537,7 +550,7 @@ function buildNote(s){
 
 /* ---------- debrief screen ---------- */
 SCREENS.debrief = function(){
-  var sub = session.endedBy === 'early' ? 'Ended early, in the hotel lift' : '3 minutes in the hotel lift';
+  var sub = session.endedBy === 'early' ? 'Ended early, in the hotel lift' : '3-minute chat in the hotel lift';
   return '<section class="screen scroll"><div class="photo db-hero"><img class="bg" src="' + IMG.lift + '" alt=""><div class="dim"></div>' +
   '<div class="chead onphoto">' + whoChip() + '<button type="button" class="glassbtn" data-act="home" aria-label="Close debrief">' + svg(P.x, 20) + '</button></div>' +
   '<div class="txt"><h1>Nice chat.</h1><div>' + esc(sub) + '</div></div></div>' +
@@ -556,16 +569,17 @@ function debriefCards(d){
 }
 
 /* ---------- teacher view ---------- */
+function fmtSec(n){ var m = Math.floor(n / 60), r = n % 60; return (m ? m + ' min ' : '') + r + ' s'; }
 SCREENS.teacher = function(){
   var s = session;
   var h = '<section class="screen hist scroll"><div class="hhead"><button type="button" class="iconbtn" data-act="debrief" aria-label="Back to the debrief">' + svg(P.back, 20) + '</button><div class="stack2"><h1>Teacher view</h1><div class="sm">What Ben sees before class · Lucía · Hotel lift · B2</div></div></div>';
-  h += '<div class="card"><div class="label">Note for Ben</div><div>' + esc(s.note) + '</div><div class="xs">Learners never see this note. Talking time ' + s.activeSec + ' s. Chat ' + (s.endedBy === 'early' ? 'ended early by the learner' : 'closed by Claire') + '.</div></div>';
+  h += '<div class="card"><div class="label">Note for Ben</div><div>' + esc(s.note) + '</div><div class="xs">Learners never see this note. Chat length chosen: 3 minutes. Talking time recorded: ' + fmtSec(s.activeSec) + ' (the clock pauses while Claire thinks). ' + (s.endedBy === 'early' ? 'Ended early with the End button.' : 'Lucía closed the chat.') + '</div></div>';
   h += '<div class="card" style="gap:12px"><div class="label">Transcript</div>' + s.turns.map(function(t){
     if (t.who === 'claire') return '<div class="turn"><div class="label">Claire</div><div class="tx">' + esc(t.text) + '</div></div>';
     return '<div class="turn"><div class="label">Lucía · spoken' + (t.hint ? ' · hint shown' : '') + '</div><div class="tx">' + esc(t.text) + '</div>' + (t.edited ? '<div class="xs">Edited before sending. The microphone heard: “' + esc(t.raw) + '”</div>' : '') + '</div>';
   }).join('') + '</div>';
   h += debriefCards(s.debrief);
-  h += '<div class="card endcard"><div class="label">That’s the demo</div><div>The live version runs on Claude. Claire writes every reply, listens through the microphone, remembers what the learner told her last time and saves each chat for Ben.</div><div><b>Want to try it?</b> Message Ben Cassidy on LinkedIn for a link.</div></div>';
+  h += '<div class="card endcard"><div class="label">That’s the demo</div><div>The live prototype runs on Claude. Claire writes every reply, remembers what the learner told her last time and saves each chat for Ben. Speaking to Claire works in Chrome on a computer for now. On a phone, the learner types. A real phone version would need its own hosting and a fixed, natural voice.</div><div><b>Want to try it?</b> Message Ben Cassidy on LinkedIn for a link.</div></div>';
   h += '<div style="display:flex;flex-direction:column;gap:10px;flex:none"><button type="button" class="btn btn-primary" data-act="again">Try different replies</button><button type="button" class="btn btn-secondary" data-act="home">Back to the scenes</button></div>';
   return h + '</section>';
 };
