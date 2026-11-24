@@ -172,7 +172,11 @@ body{display:flex;align-items:center;justify-content:center}
 .toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:20;background:var(--ink);color:#FFFFFF;font-size:14px;font-weight:500;padding:10px 16px;border-radius:20px;max-width:86%;text-align:center}
 #frame{display:flex;flex-direction:column}
 #app{position:relative;flex:1;min-height:0;inset:auto}
-.demobar{flex:none;background:var(--ink);color:#FFFFFF;font-size:13px;line-height:1.35;padding:8px 16px;text-align:center}
+.demobar{flex:none;background:var(--ink);color:#FFFFFF;font-size:13px;line-height:1.35;padding:8px 10px 8px 16px;display:flex;align-items:center;gap:10px}
+.demobar .dtxt{flex:1;min-width:0}
+.demobar{position:relative;z-index:30}
+.restart{flex:none;min-height:36px;padding:0 14px;border-radius:18px;border:1px solid rgba(255,255,255,0.55);background:transparent;color:#FFFFFF;font-size:13px;font-weight:700}
+.restart:hover{background:rgba(255,255,255,0.12)}
 .demobar b{font-weight:700}
 .persona{padding:14px 16px;border-radius:20px;background:var(--fill);display:flex;flex-direction:column;gap:4px}
 .persona b{font-size:16px}
@@ -188,7 +192,7 @@ body{display:flex;align-items:center;justify-content:center}
 </head>
 <body>
 <div id="frame">
-<div class="demobar" role="note"><b>Demo mode.</b> Scripted replies, still photo, no avatar.<span>Tested in a desktop browser. The real version is a phone app.</span></div>
+<div class="demobar"><div class="dtxt" role="note"><b>Demo mode.</b> Scripted replies, still photo, no avatar.<span>Tested in a desktop browser. The real version is a phone app.</span></div><button type="button" class="restart" data-act="restart" aria-label="Restart the demo from the beginning">Restart</button></div>
 <main id="app"></main>
 <div id="sheet"></div>
 <div id="toast" class="toast" role="status" hidden></div>
@@ -613,7 +617,12 @@ var ACT = {
   teacher: function(){ go('teacher'); },
   debrief: function(){ go('debrief'); },
   again: function(){ startChat(); },
-  home: function(){ go('picker'); }
+  home: function(){ go('picker'); },
+  restart: function(){
+    teardown(); chat = null; session = null;
+    ui.scene = 'lift'; ui.hints = true; ui.voiceOn = false;
+    go('intro'); toast('Demo restarted.');
+  }
 };
 document.addEventListener('click', function(e){
   var el = e.target.closest ? e.target.closest('[data-act]') : null;
