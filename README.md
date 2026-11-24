@@ -13,6 +13,6 @@ The learner in the demo, Lucía, is a fictional profile based on a real learner.
 ## Design boards
  Drag to move, scroll or pinch to zoom, or use the Screens, System and Fit all buttons.
 
-Contents: scenario picker, settings sheet, four conversation states, debrief, history, session view, colour tokens and type scale, components, and the laptop layout.
+Contents: first-run screen, scenario picker (four scenes), settings sheet, four conversation states, debrief, history, session view, colour tokens and type scale, components, and the laptop layout.
 
 All photos are AI-generated and owned by Ben Cassidy.
